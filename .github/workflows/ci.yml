@@ -37,7 +37,7 @@ jobs:
           cmake -S .ci/goose -B .ci/goose/build -DCMAKE_BUILD_TYPE=Debug -DGOOSE_BUILTIN_LIBS=
           cmake --build .ci/goose/build --config Debug --parallel 2
           if [[ "$RUNNER_OS" == Windows ]]; then
-            echo "$PWD/.ci/goose/build/Debug" >> "$GITHUB_PATH"
+            cygpath -w "$PWD/.ci/goose/build/Debug" >> "$GITHUB_PATH"
           else
             echo "$PWD/.ci/goose/build" >> "$GITHUB_PATH"
           fi
