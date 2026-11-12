@@ -179,7 +179,7 @@ assert(reader.tell() == 0);
 
 ## `bgzf::seek`
 
-[source](bgzf.goose#L231-L256)
+[source](bgzf.goose#L231-L257)
 
 ```goose
 fn seek(stream: Reader&, offset: u64) -> Status
@@ -198,7 +198,7 @@ assert(reader.seek(0) == bgzf::Status.Closed);
 
 ## `bgzf::Writer`
 
-[source](bgzf.goose#L277-L285)
+[source](bgzf.goose#L278-L286)
 
 ```goose
 struct Writer {
@@ -227,7 +227,7 @@ assert(writer.close() == bgzf::Status.Ready);
 
 ## `bgzf::flush`
 
-[source](bgzf.goose#L304-L317)
+[source](bgzf.goose#L305-L318)
 
 ```goose
 fn flush(writer: Writer&) -> Status
@@ -245,7 +245,7 @@ assert(writer.flush() == bgzf::Status.Closed);
 
 ## `bgzf::close`
 
-[source](bgzf.goose#L327-L340)
+[source](bgzf.goose#L328-L341)
 
 ```goose
 fn close(writer: Writer&) -> Status
@@ -264,7 +264,7 @@ assert(writer.close() == bgzf::Status.Ready);
 
 ## `bgzf::open`
 
-[source](bgzf.goose#L351-L365)
+[source](bgzf.goose#L352-L366)
 
 ```goose
 fn open(writer: Writer&, path: const u8[:], level: i32 = 6) -> Status
@@ -284,7 +284,7 @@ assert(writer.close() == bgzf::Status.Invalid);
 
 ## `bgzf::write`
 
-[source](bgzf.goose#L374-L385)
+[source](bgzf.goose#L375-L386)
 
 ```goose
 fn write(writer: Writer&, bytes: const u8[:]) -> Status
@@ -302,7 +302,7 @@ assert(writer.write("data") == bgzf::Status.Closed);
 
 ## `bgzf::reserve_record`
 
-[source](bgzf.goose#L395-L399)
+[source](bgzf.goose#L396-L400)
 
 ```goose
 fn reserve_record(writer: Writer&, length: i64) -> Status
@@ -321,7 +321,7 @@ assert(writer.reserve_record(10) == bgzf::Status.Closed);
 
 ## `bgzf::tell`
 
-[source](bgzf.goose#L408-L408)
+[source](bgzf.goose#L409-L409)
 
 ```goose
 fn tell(writer: const Writer&) -> u64

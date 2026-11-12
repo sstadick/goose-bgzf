@@ -9,8 +9,8 @@ validate each block with libdeflate. No htslib dependency.
 ```goose
 import std;
 import os;
-import bgzf from "github.com/sstadick/goose-bgzf@v0.1.0";
-import io from "github.com/sstadick/goose-io@v0.2.2";
+import bgzf from "github.com/sstadick/goose-bgzf@v0.1.1";
+import io from "github.com/sstadick/goose-io@v0.3.0";
 import bstr from "github.com/sstadick/goose-bstr@v0.3.1";
 import simd_bytes from "github.com/sstadick/goose-simd@v0.2.0";
 import deflate from "github.com/sstadick/goose-deflate@v0.1.0";
@@ -80,7 +80,8 @@ Documentation scripts default to a sibling goose-doc checkout; override
 using Python zlib/gzip and exercise exact/partial reads, 64 KiB boundaries,
 virtual offsets, corrupt/truncated members, empty files, failed writes and
 resource reuse in debug and release builds. CI covers Linux x86-64/ARM64 and
-macOS ARM64. Benchmarks compile native code **and libdeflate with Clang
+macOS ARM64 and Windows x86-64. Seeks use goose-io's owning native module so
+Windows CRT file descriptors do not cross DLL boundaries. Benchmarks compile native code **and libdeflate with Clang
 `-O3 -march=native`**; Goose `-O2` selects frontend inlining only.
 
 MIT; see [LICENSE](LICENSE). BGZF framing and block-size policy follow

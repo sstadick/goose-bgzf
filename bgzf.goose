@@ -1,7 +1,7 @@
 // Seekable BGZF input. Buffers and the decompressor are reused per block.
 namespace bgzf;
 import std;
-import io from "github.com/sstadick/goose-io@v0.2.2";
+import io from "github.com/sstadick/goose-io@v0.3.0";
 import deflate from "github.com/sstadick/goose-deflate@v0.1.0";
 
 extern fn seek_raw(fd: i32, offset: i64) -> i64 = "goose_bgzf_seek";
@@ -241,7 +241,8 @@ fn seek(stream: Reader&, offset: u64) -> Status {
     stream.end = 0;
     stream.input_begin = 0;
     stream.input_end = 0;
-    if seek_raw(stream.input.fd, compressed_offset as i64) < 0 {
+    // Keep CRT descriptors in the module that opened them on Windows.
+    if io::seek(stream.input, compressed_offset as i64) < 0 {
         stream.status = Status.IoError;
         return stream.status;
     }

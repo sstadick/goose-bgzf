@@ -80,9 +80,17 @@ def suite(command, directory):
 def main():
     with tempfile.TemporaryDirectory(prefix="goose-bgzf-tests-") as t:
         path = Path(t)
+        # TinyCC loads I/O and BGZF as separate native modules. In particular,
+        # Windows CRT descriptors must be sought by the module that opened them.
+        first = block(b"alpha")
+        source, decoded = path / "seek.bgz", path / "seek.decoded"
+        source.write_bytes(first + block(b"beta"))
+        result = subprocess.check_output([os.environ.get("GOOSE", "goose"), "run", "tests/probe.goose",
+            "--debug", "--", "seek", str(source), str(decoded), str((len(first) << 16) | 1), "3"], cwd=ROOT, text=True)
+        assert result.strip() == "Ready" and decoded.read_bytes() == b"eta"
         for debug in (True, False):
-            exe = path / "probe"
-            subprocess.run([os.environ.get("GOOSE", "goose"), "build", "tests/probe.goose", "--cc", "clang", "-O2",
+            exe = path / ("probe.exe" if os.name == "nt" else "probe")
+            subprocess.run([os.environ.get("GOOSE", "goose"), "build", "tests/probe.goose", "--cc", os.environ.get("GOOSE_CC", "clang"), "-O2",
                             *(["--debug"] if debug else []), "-o", str(exe)], cwd=ROOT, check=True)
             suite([exe], path)
 

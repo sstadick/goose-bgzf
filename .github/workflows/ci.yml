@@ -7,15 +7,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, windows-2025]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
     env:
-      CC: clang
-      CXX: clang++
-      GOOSE_CC: clang
+      CC: ${{ matrix.os == 'windows-2025' && 'cl' || 'clang' }}
+      CXX: ${{ matrix.os == 'windows-2025' && 'cl' || 'clang++' }}
+      GOOSE_CC: ${{ matrix.os == 'windows-2025' && 'clang-cl' || 'clang' }}
+      PYTHONUTF8: '1'
       GOOSE_DOC: .ci/goose-doc/main.goose
     steps:
+      - if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
@@ -29,10 +35,14 @@ jobs:
           path: .ci/goose-doc
       - run: |
           cmake -S .ci/goose -B .ci/goose/build -DCMAKE_BUILD_TYPE=Debug -DGOOSE_BUILTIN_LIBS=
-          cmake --build .ci/goose/build --parallel 2
-          echo "$PWD/.ci/goose/build" >> "$GITHUB_PATH"
+          cmake --build .ci/goose/build --config Debug --parallel 2
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            echo "$PWD/.ci/goose/build/Debug" >> "$GITHUB_PATH"
+          else
+            echo "$PWD/.ci/goose/build" >> "$GITHUB_PATH"
+          fi
       - run: scripts/docs.sh --check
-      - run: scripts/doctest.sh
+      - run: scripts/doctest.sh --cc "$GOOSE_CC"
       - run: python3 tests/run.py
       - name: Generate release API
         if: matrix.os == 'ubuntu-24.04'
