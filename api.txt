@@ -1,0 +1,12 @@
+bgzf::Status
+bgzf::Reader
+bgzf::Writer
+bgzf::open
+bgzf::close
+bgzf::read
+bgzf::read_some
+bgzf::write
+bgzf::flush
+bgzf::tell
+bgzf::seek
+bgzf::reserve_record

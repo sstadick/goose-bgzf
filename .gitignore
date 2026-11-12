@@ -1,0 +1,3 @@
+/.ci/
+/.venv/
+__pycache__/
