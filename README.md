@@ -65,7 +65,7 @@ See the generated [API](API.md) and [benchmarks](bench/README.md).
 ## Build and verify
 
 Requires Goose with package C sidecars, Clang, CMake 3.20+, Python 3.9+,
-and Git. CI pins Goose `74c641c5ac6d762e57e3177678fe9dea414d042a`
+and Git. CI pins Goose `855f1037a5ceee837ef270382ac8d26df47a7139`
 and goose-doc `bb399143866c0c42268f23c8dfda7a447173f93d`.
 Root programs must declare the transitive imports shown above.
 
