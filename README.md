@@ -65,7 +65,7 @@ See the generated [API](API.md) and [benchmarks](bench/README.md).
 ## Build and verify
 
 Requires Goose with package C sidecars, Clang, CMake 3.20+, Python 3.9+,
-and Git. CI pins Goose `855f1037a5ceee837ef270382ac8d26df47a7139`
+and Git. CI pins Goose `4602c98660676b2cb94bc9b06fec8c65b37fce92`
 and goose-doc `bb399143866c0c42268f23c8dfda7a447173f93d`.
 Root programs must declare the transitive imports shown above.
 
@@ -79,7 +79,13 @@ Documentation scripts default to a sibling goose-doc checkout; override
 `GOOSE_DOC=/path/to/goose-doc/main.goose`. Tests independently encode/decode
 using Python zlib/gzip and exercise exact/partial reads, 64 KiB boundaries,
 virtual offsets, corrupt/truncated members, empty files, failed writes and
-resource reuse in debug and release builds. CI covers Linux x86-64/ARM64 and
+resource reuse in debug and release builds. Checkfree caller tests exercise
+unannotated `tell` helpers at `-O0`/`-O2`, with and without debug checks. The
+compiler verifies the code a `checkfree` caller executes, not callee annotations;
+BGZF buffered reads still retain bounds checks and are not a checkfree API.
+Tests also require call-chain diagnostics for rejected reads and a warning when
+`--no-bce` disables verification. No library annotations or checks are removed.
+CI covers Linux x86-64/ARM64 and
 macOS ARM64 and Windows x86-64. Seeks use goose-io's owning native module so
 Windows CRT file descriptors do not cross DLL boundaries. Benchmarks compile native code **and libdeflate with Clang
 `-O3 -march=native`**; Goose `-O2` selects frontend inlining only.

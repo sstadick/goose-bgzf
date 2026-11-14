@@ -1,5 +1,6 @@
 """BGZF wire, lifecycle, virtual offset and independent zlib interoperability tests."""
 import gzip
+import json
 import os
 from pathlib import Path
 import random
@@ -77,9 +78,43 @@ def suite(command, directory):
     print("PASS", command, "BGZF bytes, boundaries, seeks, errors and lifecycle", flush=True)
 
 
+def checkfree(directory):
+    goose = os.environ.get("GOOSE", "goose")
+    cc = os.environ.get("GOOSE_CC", "clang")
+    exe = directory / ("checkfree.exe" if os.name == "nt" else "checkfree")
+    for optimization in ("-O0", "-O2"):
+        for debug in (True, False):
+            flags = [optimization, *(["--debug"] if debug else [])]
+            subprocess.run([goose, "build", "tests/checkfree.goose", "--cc", cc,
+                            *flags, "-o", str(exe)], cwd=ROOT, check=True)
+            subprocess.run([str(exe)], cwd=ROOT, check=True)
+            rejected = subprocess.run([goose, "check", "tests/checkfree_rejected.goose",
+                                       *flags, "--diagnostics", "json"],
+                                      cwd=ROOT, capture_output=True, text=True)
+            assert rejected.returncode != 0, rejected.stdout + rejected.stderr
+            diagnostics = json.loads(rejected.stdout)
+            assert any(d["severity"] == "error"
+                       and "checkfree fn read_checked calls bgzf::read_some" in d["message"]
+                       and "keeps a bounds check" in d["message"]
+                       and Path(d.get("file", "")).name == "bgzf.goose"
+                       and d.get("line", 0) > 0 and d.get("col", 0) > 0
+                       for d in diagnostics), diagnostics
+            print("PASS checkfree callers and rejection diagnostics", flags, flush=True)
+    # Disabling BCE must warn, not silently claim that the caller was verified.
+    unchecked = subprocess.run([goose, "check", "tests/checkfree_rejected.goose",
+                                "--no-bce", "--diagnostics", "json"],
+                               cwd=ROOT, capture_output=True, text=True)
+    assert unchecked.returncode == 0, unchecked.stdout + unchecked.stderr
+    diagnostics = json.loads(unchecked.stdout)
+    assert any(d["severity"] == "warning" and "checkfree is not verified" in d["message"]
+               and "--no-bce" in d["message"] for d in diagnostics), diagnostics
+    print("PASS checkfree --no-bce warning", flush=True)
+
+
 def main():
     with tempfile.TemporaryDirectory(prefix="goose-bgzf-tests-") as t:
         path = Path(t)
+        checkfree(path)
         # TinyCC loads I/O and BGZF as separate native modules. In particular,
         # Windows CRT descriptors must be sought by the module that opened them.
         first = block(b"alpha")
